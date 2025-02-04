@@ -1,6 +1,6 @@
 {
   "name": "simple-video-cutter-cli",
-  "type": "module",
+  "type": "commonjs",
   "version": "1.0.0",
   "description": "Cut part from video and compress it with preset using FFmpeg library.",
   "author": "Skippia",
@@ -20,11 +20,12 @@
     "node",
     "typescript"
   ],
-  "main": "./dist/main.mjs",
+  "main": "./dist/main.cjs",
   "scripts": {
     "dev": "npx tsx --env-file=.env ./src/main.ts",
-    "start": "node --env-file=.env ./dist/main.mjs",
-    "prebuild": "npx rimraf --glob ./dist",
+    "start": "node --env-file=.env ./dist/main.cjs",
+    "prebuild": "npm i -g rimraf && npx rimraf --glob ./dist",
+    "postbuild": "npx rimraf --glob **/node_modules && npm i --omit=dev",
     "build": "npx vite build",
     "eslint": "npx eslint .",
     "eslint:fix": "npx eslint . --fix"
@@ -38,7 +39,6 @@
     "@types/fluent-ffmpeg": "^2.1.27",
     "@types/node": "^22.13.0",
     "eslint": "^9.19.0",
-    "rimraf": "^6.0.1",
     "tsx": "^4.19.2",
     "vite": "^6.0.11"
   }

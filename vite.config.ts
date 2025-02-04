@@ -1,10 +1,7 @@
 import { builtinModules } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-
 import { defineConfig } from 'vite'
-
-
 import packageJson from './package.json'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -30,7 +27,6 @@ export default defineConfig({
       /* 'console' */
       'debugger',
     ],
-    keepNames: true,
     treeShaking: true,
     color: true,
   },
@@ -42,8 +38,8 @@ export default defineConfig({
     lib: {
       entry: path.resolve(__dirname, 'src/main.ts'),
       name: getPackageNameCamelCase(),
-      formats: ['es'],
-      fileName: () => 'main.mjs',
+      formats: ['cjs'],
+      fileName: () => 'main.cjs',
     },
     rollupOptions: {
       external: [
