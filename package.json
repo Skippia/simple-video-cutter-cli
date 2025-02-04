@@ -1,15 +1,29 @@
 {
-  "name": "video-cutter",
+  "name": "simple-video-cutter-cli",
   "type": "module",
   "version": "1.0.0",
-  "description": "",
-  "author": "",
+  "description": "Cut part from video and compress it with preset using FFmpeg library.",
+  "author": "Skippia",
   "license": "ISC",
-  "keywords": [],
-  "main": "index.js",
+  "homepage": "https://github.com/Skippia/simple-video-cutter-cli#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Skippia/simple-video-cutter-cli.git"
+  },
+  "keywords": [
+    "ffmpeg",
+    "fluent-ffmpeg",
+    "video-cutter",
+    "video-compression",
+    "cutter",
+    "compression",
+    "node",
+    "typescript"
+  ],
+  "main": "./dist/main.mjs",
   "scripts": {
-    "start": "npx tsx --env-file=.env ./src/main.ts",
-    "start:prod": "node --env-file=.env ./dist/main.cjs",
+    "dev": "npx tsx --env-file=.env ./src/main.ts",
+    "start": "node --env-file=.env ./dist/main.mjs",
     "prebuild": "npx rimraf --glob ./dist",
     "build": "npx vite build",
     "eslint": "npx eslint .",
@@ -17,18 +31,15 @@
   },
   "dependencies": {
     "ffmpeg-static": "^5.2.0",
-    "fluent-ffmpeg": "^2.1.3",
-    "glob": "^11.0.1"
+    "fluent-ffmpeg": "^2.1.3"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.1.1",
     "@types/fluent-ffmpeg": "^2.1.27",
-    "@types/glob": "^8.1.0",
     "@types/node": "^22.13.0",
     "eslint": "^9.19.0",
     "rimraf": "^6.0.1",
     "tsx": "^4.19.2",
-    "typescript-eslint": "^8.23.0",
     "vite": "^6.0.11"
   }
 }
