@@ -1,4 +1,3 @@
-import fs from 'node:fs'
 import path from 'node:path'
 import process, { argv, exit } from 'node:process'
 import ffmpegPath from 'ffmpeg-static'
@@ -44,7 +43,7 @@ if (durationSeconds <= 0) {
 }
 
 ffmpeg(
-  fs.createReadStream(pathToFile),
+  pathToFile,
 )
   .seekInput(startTime)
   .duration(durationSeconds)
