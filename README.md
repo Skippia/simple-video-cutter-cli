@@ -23,7 +23,7 @@ git clone --depth 1 https://github.com/Skippia/simple-video-cutter-cli.git
 ```
 2. Install dependencies
 ```sh
-cd ./simple-video-cutter-cli && npm i
+cd ./simple-video-cutter-cli && pnpm i
 ```
 3. Set env variables as **output directory for result of compression**
 - Rename **.env.example** -> **.env** and update variables (for example):
@@ -32,11 +32,11 @@ cd ./simple-video-cutter-cli && npm i
 
 4. Build
 ```sh
-npm run build
+pnpm build
 ```
 5. Run script
 ```sh
-npm run start -- --disk $disk --filename $filename --start $start --end $end
+pnpm start --disk $disk --filename $filename --start $start --end $end
 ```
 
 ## Demo
@@ -46,13 +46,16 @@ npm run start -- --disk $disk --filename $filename --start $start --end $end
   - `/mnt/d/cats/video-about-cat.mkv` (linux style path)
   - In order to cut fragment of this video from 1h 1m 1s till 1h 5m 5s use following command:
 ```sh
-npm run start -- --disk /mnt/d --filename "video-about-cat.mkv" --start 01:01:01 --end 01:05:05
+pnpm start --disk /mnt/d --filename "video-about-cat.mkv" --start 01:01:01 --end 01:05:05
 ```
-Video with such name automatically will be found on disk (regardless of the depth of the folder). If you want to avoid possible collision names, rename video in advanced or use absolute path (in OS specific format) instead using filename. F.e: 
+Video with such name automatically will be found on disk (regardless of the depth of the folder). If you want to avoid possible collision names, use absolute path instead of filename (see below).
+
+2. If you already know the absolute path to the file, `--disk` is not needed:
 ```sh
-npm run start -- --disk /mnt/d --filename "/cats/video-about-cat.mkv" --start 01:01:01 --end 01:05:05
+pnpm start --filename "/mnt/d/cats/video-about-cat.mkv" --start 01:01:01 --end 01:05:05
 ```
-2. By default is used `540p` preset (FFmpeg options):
+
+3. By default is used `540p` preset (FFmpeg options):
 - [
   '-crf 28',
   '-preset ultrafast',
@@ -63,12 +66,11 @@ npm run start -- --disk /mnt/d --filename "/cats/video-about-cat.mkv" --start 01
 
 - Other available presets: `720p` and `lossless`. To set preset use `--preset` option, f.e:
 ```sh
-npm run start -- \
-  --disk /mnt/d \
-  --filename "/video-about-cat.mkv" \ 
+pnpm start \
+  --filename "/mnt/d/cats/video-about-cat.mkv" \
   --start 01:01:01 \
   --end 01:05:05 \
   --preset lossless
 ```
-3. Illustation:
+4. Illustation:
 ![](https://github.com/Skippia/simple-video-cutter-cli/blob/master/docs/demo.png?raw=true)

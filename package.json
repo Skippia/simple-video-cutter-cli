@@ -22,23 +22,27 @@
   ],
   "main": "./dist/main.cjs",
   "scripts": {
-    "dev": "npx tsx --env-file=.env ./src/main.ts",
+    "dev": "pnpm exec tsx --env-file=.env ./src/main.ts",
     "start": "node --env-file=.env ./dist/main.cjs",
-    "prebuild": "npm i -g rimraf && npx rimraf --glob ./dist",
-    "postbuild": "npx rimraf --glob **/node_modules && npm i --omit=dev",
-    "build": "npx vite build",
-    "eslint": "npx eslint .",
-    "eslint:fix": "npx eslint . --fix"
+    "prebuild": "pnpm exec rimraf --glob ./dist",
+    "postbuild": "pnpm exec rimraf --glob **/node_modules && pnpm i --prod",
+    "build": "pnpm exec vite build",
+    "eslint": "pnpm exec eslint .",
+    "eslint:fix": "pnpm exec eslint . --fix"
   },
   "dependencies": {
     "ffmpeg-static": "^5.2.0",
     "fluent-ffmpeg": "^2.1.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "ffmpeg-static"]
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.1.1",
     "@types/fluent-ffmpeg": "^2.1.27",
     "@types/node": "^22.13.0",
     "eslint": "^9.19.0",
+    "rimraf": "^6.0.1",
     "tsx": "^4.19.2",
     "vite": "^6.0.11"
   }

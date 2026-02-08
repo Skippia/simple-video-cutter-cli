@@ -6,6 +6,15 @@ import { checkFilenameIsPath } from './helpers'
 
 export function findFileDirectory(disk: string, filename: string): string {
   try {
+    // Absolute path provided — use directly
+    if (path.isAbsolute(filename)) {
+      if (!fsSync.existsSync(filename)) {
+        throw new Error(`File on path ${filename} does not exist`)
+      }
+
+      return filename
+    }
+
     // Windows
     if (process.platform === 'win32') {
       const drive = `${disk.toUpperCase()}:\\`
