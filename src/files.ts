@@ -1,4 +1,4 @@
-import { execSync } from 'node:child_process'
+import { execFileSync, execSync } from 'node:child_process'
 import fsSync from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
@@ -17,8 +17,9 @@ export function findFileDirectory(disk: string, filename: string): string {
 
     // Windows
     if (process.platform === 'win32') {
-      const drive = `${disk.toUpperCase()}:\\`
-      const findCommand = `dir "${drive}${filename}" /s /b`
+      // If disk is already a full path (e.g. from os.homedir()), use it directly;
+      // otherwise treat it as a single drive letter
+      const drive = disk.length === 1 ? `${disk.toUpperCase()}:\\` : disk
 
       let pathToFile = ''
 
@@ -30,11 +31,13 @@ export function findFileDirectory(disk: string, filename: string): string {
         pathToFile = path.join(drive, filename)
       }
       else {
+        // Note: dir with /s /b requires shell; filename is quoted to mitigate injection
+        const findCommand = `dir "${path.join(drive, filename)}" /s /b`
         pathToFile = execSync(findCommand, { encoding: 'utf8' }).trim()
       }
 
       if (!pathToFile) {
-        throw new Error('Not found')
+        throw new Error(`File "${filename}" not found in ${drive}`)
       }
 
       if (pathToFile.includes('\r\n')) {
@@ -45,7 +48,7 @@ export function findFileDirectory(disk: string, filename: string): string {
     }
 
     // Linux
-    const findCommand = `find /${disk} -name "${filename}" -exec dirname {} \\; -quit`
+    const searchRoot = path.isAbsolute(disk) ? disk : `/${disk}`
     let pathToFile = ''
 
     if (checkFilenameIsPath(filename)) {
@@ -56,8 +59,16 @@ export function findFileDirectory(disk: string, filename: string): string {
       pathToFile = path.join(disk, filename)
     }
     else {
-      // Command always return 1 path to folder even if there are collision names
-      const maybeNotCollisionPathToFolder = execSync(findCommand, { encoding: 'utf8' }).trim()
+      // Use execFileSync to avoid command injection via filename
+      const maybeNotCollisionPathToFolder = execFileSync(
+        'find',
+        [searchRoot, '-name', filename, '-exec', 'dirname', '{}', ';', '-quit'],
+        { encoding: 'utf8' },
+      ).trim()
+
+      if (!maybeNotCollisionPathToFolder) {
+        throw new Error(`File "${filename}" not found in ${searchRoot}`)
+      }
 
       // Same file is located on root folder
       if (fsSync.existsSync(path.join(disk, filename)) && maybeNotCollisionPathToFolder) {

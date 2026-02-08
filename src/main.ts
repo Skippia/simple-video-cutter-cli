@@ -8,7 +8,6 @@ import {
   checkFilenameIsPath,
   convertTimeIntoSeconds,
   generateOutputFilename,
-  getPresetName,
   parseUserInput,
 } from './helpers'
 
@@ -16,15 +15,16 @@ if (ffmpegPath) {
   ffmpeg.setFfmpegPath(ffmpegPath)
 }
 
-const { disk, filename, startTime, endTime, preset } = parseUserInput(argv.slice(2))
+const { disk, filename, startTime, endTime, preset, presetName } = parseUserInput(argv.slice(2))
+const isCopyMode = presetName === 'copy'
 
-const targetDirectory = (
-  process.platform === 'win32'
-    ? process.env.VITE_APP_STORAGE_WINDOWS_PATH
-    : process.env.VITE_APP_STORAGE_LINUX_PATH)!
+const targetDirectory = process.platform === 'win32'
+  ? process.env.VITE_APP_STORAGE_WINDOWS_PATH
+  : process.env.VITE_APP_STORAGE_LINUX_PATH
 
 if (!targetDirectory) {
-  console.error('Environment variable STORAGE_WINDOWS_PATH or STORAGE_LINUX_PATH is not set.')
+  console.error('Environment variable VITE_APP_STORAGE_WINDOWS_PATH or VITE_APP_STORAGE_LINUX_PATH is not set.')
+  exit(1)
 }
 
 const pathToFile = findFileDirectory(disk, filename)
@@ -33,8 +33,18 @@ const outputFile = generateOutputFilename(
   targetDirectory,
 )
 
-const startSeconds = convertTimeIntoSeconds(startTime)
-const endSeconds = convertTimeIntoSeconds(endTime)
+let startSeconds: number
+let endSeconds: number
+
+try {
+  startSeconds = convertTimeIntoSeconds(startTime)
+  endSeconds = convertTimeIntoSeconds(endTime)
+}
+catch (err) {
+  console.error((err as Error).message)
+  exit(1)
+}
+
 const durationSeconds = endSeconds - startSeconds
 
 if (durationSeconds <= 0) {
@@ -42,26 +52,37 @@ if (durationSeconds <= 0) {
   exit(1)
 }
 
-ffmpeg(
-  pathToFile,
-)
+const command = ffmpeg(pathToFile)
   .seekInput(startTime)
   .duration(durationSeconds)
-  .videoCodec('libx265')
-  .audioCodec('aac')
+
+if (isCopyMode) {
+  command.videoCodec('copy').audioCodec('copy')
+}
+else {
+  command.videoCodec('libx265').audioCodec('aac')
+}
+
+command
   .outputOptions(preset)
   .format('mp4')
   .on('start', (_command: string) => {
-    console.time('Time of compressing')
-    console.log('Selected preset:', getPresetName(preset))
-    console.log('Start compressing...')
+    console.time('Time of processing')
+    console.log('Selected preset:', presetName)
+    console.log(isCopyMode ? 'Start copying...' : 'Start compressing...')
+  })
+  .on('progress', (progress) => {
+    const processedSeconds = convertTimeIntoSeconds(progress.timemark)
+    const percent = Math.min(100, Math.round((processedSeconds / durationSeconds) * 100))
+    process.stdout.write(`\rProgress: ${percent}%`)
   })
   .on('error', (err: Error) => {
     console.error(`Error during processing: ${err.message}`)
     exit(1)
   })
   .on('end', () => {
+    process.stdout.write('\n')
     console.log(`Output file created: ${outputFile}`)
-    console.timeEnd('Time of compressing')
+    console.timeEnd('Time of processing')
   })
   .save(outputFile)

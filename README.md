@@ -1,23 +1,24 @@
-## Simple Video Cutter
+# Simple Video Cutter
 
 ## Description
 
-- A CLI tool to cut a segment from a video and compress it using FFmpeg (with one of predefined presets). Built with Node.js and TypeScript using [fluent-ffmpeg](https://www.npmjs.com/package/fluent-ffmpeg) and [ffmpeg-static](https://www.npmjs.com/package/ffmpeg-static).
+A CLI tool to cut a segment from a video and compress it using FFmpeg (with one of predefined presets). Built with Node.js and TypeScript using [fluent-ffmpeg](https://www.npmjs.com/package/fluent-ffmpeg) and [ffmpeg-static](https://www.npmjs.com/package/ffmpeg-static).
 
 ## Features
 
 - **Cross-Platform**: Works on Linux and Windows
 - **Video Segment Cutting**: Specify start and end times to extract a portion of the video
 - **Compression**: Compress video with preset options
+- **Auto-search**: Automatically finds a file by name within the specified directory
 
 ## Pre-requisites
 
 - Node.js (tested on v22.13)
-  ```
+- pnpm
 
 ## Installation
 
-1. Clone actual version of app
+1. Clone the repository
 ```sh
 git clone --depth 1 https://github.com/Skippia/simple-video-cutter-cli.git
 ```
@@ -25,46 +26,56 @@ git clone --depth 1 https://github.com/Skippia/simple-video-cutter-cli.git
 ```sh
 cd ./simple-video-cutter-cli && pnpm i
 ```
-3. Set env variables as **output directory for result of compression**
-- Rename **.env.example** -> **.env** and update variables (for example):
-![](https://github.com/Skippia/simple-video-cutter-cli/blob/master/docs/env.png?raw=true)
-
+3. Create `.env` file with output directory for compressed videos:
+```sh
+cp .env.example .env
+```
+Set the following variables:
+- `VITE_APP_STORAGE_WINDOWS_PATH` — output directory on Windows (e.g. `"X:\\OBS"`)
+- `VITE_APP_STORAGE_LINUX_PATH` — output directory on Linux (e.g. `"/mnt/x/OBS"`)
 
 4. Build
 ```sh
 pnpm build
 ```
-5. Run script
+
+## Usage
+
 ```sh
-pnpm start --disk $disk --filename $filename --start $start --end $end
+pnpm start --filename <filename_or_path> --start <start_time> --end <end_time> [--disk <search_dir>] [--preset <preset>]
+```
+
+| Argument | Required | Description |
+|---|---|---|
+| `--filename` | Yes | File name or absolute path to the video |
+| `--start` | Yes | Start time (`hh:mm:ss`, `mm:ss`, or `ss`) |
+| `--end` | Yes | End time (`hh:mm:ss`, `mm:ss`, or `ss`) |
+| `--disk` | No | Directory to search for the file (default: `$HOME`) |
+| `--preset` | No | Preset: `540p`, `720p`, `lossless`, `copy` (default: `540p`) |
+
+For development (without build step):
+```sh
+pnpm dev --filename <filename_or_path> --start <start_time> --end <end_time>
 ```
 
 ## Demo
 
-1. Suppose we have video on the following path:
-  - `D:\cats\video-about-cat.mkv` (windows style path)
-  - `/mnt/d/cats/video-about-cat.mkv` (linux style path)
-  - In order to cut fragment of this video from 1h 1m 1s till 1h 5m 5s use following command:
+1. Search by filename — the file will be found automatically in `$HOME`:
+```sh
+pnpm start --filename "video-about-cat.mkv" --start 01:01:01 --end 01:05:05
+```
+
+2. Search in a specific directory:
 ```sh
 pnpm start --disk /mnt/d --filename "video-about-cat.mkv" --start 01:01:01 --end 01:05:05
 ```
-Video with such name automatically will be found on disk (regardless of the depth of the folder). If you want to avoid possible collision names, use absolute path instead of filename (see below).
 
-2. If you already know the absolute path to the file, `--disk` is not needed:
+3. Absolute path (`--disk` is not needed):
 ```sh
 pnpm start --filename "/mnt/d/cats/video-about-cat.mkv" --start 01:01:01 --end 01:05:05
 ```
 
-3. By default is used `540p` preset (FFmpeg options):
-- [
-  '-crf 28',
-  '-preset ultrafast',
-  '-b:a 128k',
-  '-movflags +faststart',
-  '-vf scale=-2:540,format=yuv420p'
-]
-
-- Other available presets: `720p` and `lossless`. To set preset use `--preset` option, f.e:
+4. With compression preset:
 ```sh
 pnpm start \
   --filename "/mnt/d/cats/video-about-cat.mkv" \
@@ -72,5 +83,25 @@ pnpm start \
   --end 01:05:05 \
   --preset lossless
 ```
-4. Illustation:
+
+5. Fast cut without re-encoding:
+```sh
+pnpm start \
+  --filename "/mnt/d/cats/video-about-cat.mkv" \
+  --start 01:01:01 \
+  --end 01:05:05 \
+  --preset copy
+```
+
+## Presets
+
+| Preset | Mode | CRF | Audio | Resolution |
+|---|---|---|---|---|
+| `540p` (default) | re-encode (H.265) | 26 | 128k | 540p |
+| `720p` | re-encode (H.265) | 26 | 128k | 720p |
+| `lossless` | re-encode (H.265) | 18 | 128k | original |
+| `copy` | stream copy | — | — | original |
+
+`copy` copies video and audio streams without re-encoding — **~100x faster**, but no compression or resizing. Cut points snap to the nearest keyframe.
+
 ![](https://github.com/Skippia/simple-video-cutter-cli/blob/master/docs/demo.png?raw=true)

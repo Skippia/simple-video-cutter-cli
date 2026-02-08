@@ -1,10 +1,12 @@
+import os from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
 import { PRESETS_MAP } from './presets'
 
 function usage(): never {
   console.error(
-    'Usage: script --disk <disk> --filename <filename> --start <start_time> --end <end_time> --preset <preset_name>',
+    'Usage: script --filename <filename> --start <start_time> --end <end_time>'
+    + ' [--disk <search_dir>] [--preset <preset_name>]',
   )
   process.exit(1)
 }
@@ -31,7 +33,12 @@ export function generateOutputFilename(filename: string, targetDirectory: string
  * Convert a time string (hh:mm:ss, mm:ss, or ss) into seconds.
  */
 export function convertTimeIntoSeconds(timeStr: string): number {
-  const parts = timeStr.split(':').map(Number)!
+  const parts = timeStr.split(':').map(Number)
+
+  if (parts.some(Number.isNaN)) {
+    throw new Error(`Invalid time format: "${timeStr}". Expected hh:mm:ss, mm:ss, or ss.`)
+  }
+
   if (parts.length === 3) {
     return parts[0]! * 3600 + parts[1]! * 60 + parts[2]!
   }
@@ -42,7 +49,7 @@ export function convertTimeIntoSeconds(timeStr: string): number {
     return parts[0]!
   }
 
-  throw new Error('Invalid time format')
+  throw new Error(`Invalid time format: "${timeStr}". Expected hh:mm:ss, mm:ss, or ss.`)
 }
 
 export function parseUserInput(args: string[]): {
@@ -51,12 +58,14 @@ export function parseUserInput(args: string[]): {
   startTime: string
   endTime: string
   preset: string[]
+  presetName: string
 } {
   let disk: string | undefined
   let filename: string | undefined
   let startTime: string | undefined
   let endTime: string | undefined
-  let preset: string[] = PRESETS_MAP['540p']
+  let presetName: keyof typeof PRESETS_MAP = '540p'
+  let preset: string[] = PRESETS_MAP[presetName]
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i]!
@@ -78,7 +87,8 @@ export function parseUserInput(args: string[]): {
       const isPresetExists = Object.keys(PRESETS_MAP).includes(maybeValidPresetName)
 
       if (isPresetExists) {
-        preset = PRESETS_MAP[maybeValidPresetName as keyof typeof PRESETS_MAP]
+        presetName = maybeValidPresetName as keyof typeof PRESETS_MAP
+        preset = PRESETS_MAP[presetName]
       }
       else {
         console.warn(`Preset "${maybeValidPresetName}" does not exist.\nAvailable preset names are: ${Object.keys(PRESETS_MAP).join(', ')}.\nSelected default preset: ${getPresetName(preset)}.`)
@@ -96,7 +106,8 @@ export function parseUserInput(args: string[]): {
 
   return {
     preset,
-    disk: disk as string,
+    presetName,
+    disk: disk ?? os.homedir(),
     filename: filename as string,
     startTime: startTime as string,
     endTime: endTime as string,
