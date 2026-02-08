@@ -25,7 +25,6 @@
     "dev": "pnpm exec tsx --env-file=.env ./src/main.ts",
     "start": "node --env-file=.env ./dist/main.cjs",
     "prebuild": "pnpm exec rimraf --glob ./dist",
-    "postbuild": "pnpm exec rimraf --glob **/node_modules && pnpm i --prod",
     "build": "pnpm exec vite build",
     "eslint": "pnpm exec eslint .",
     "eslint:fix": "pnpm exec eslint . --fix"

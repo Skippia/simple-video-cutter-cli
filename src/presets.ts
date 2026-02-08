@@ -20,8 +20,13 @@ export const toLossless = [
   '-b:a 128k',
 ] as const
 
+export const toCopy = [
+  '-movflags +faststart',
+] as const
+
 export const PRESETS_MAP = {
   '540p': to540p,
   '720p': to720p,
   'lossless': toLossless,
+  'copy': toCopy,
 } as const
