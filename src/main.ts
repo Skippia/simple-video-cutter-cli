@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs'
 import path from 'node:path'
 import process, { argv, exit } from 'node:process'
 import ffmpegPath from 'ffmpeg-static'
@@ -8,10 +9,13 @@ import {
   checkFilenameIsPath,
   convertTimeIntoSeconds,
   generateOutputFilename,
+  loadConfigEnv,
   parseUserInput,
 } from './helpers'
 
-if (ffmpegPath) {
+loadConfigEnv()
+
+if (ffmpegPath && existsSync(ffmpegPath)) {
   ffmpeg.setFfmpegPath(ffmpegPath)
 }
 

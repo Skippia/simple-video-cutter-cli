@@ -58,6 +58,49 @@ For development (without build step):
 pnpm dev --filename <filename_or_path> --start <start_time> --end <end_time>
 ```
 
+## Global Install (standalone binary)
+
+Build a self-contained binary via [Bun](https://bun.sh/) — no Node.js or pnpm required at runtime.
+
+### Prerequisites
+
+- [Bun](https://bun.sh/) (for building)
+- `ffmpeg` installed and available in `$PATH`
+
+### Build
+
+```sh
+pnpm build:bin
+```
+
+This produces `dist/cutter`.
+
+### Setup
+
+1. Copy the config file:
+```sh
+mkdir -p ~/.config/cutter
+cp .env.example ~/.config/cutter/.env
+# Edit ~/.config/cutter/.env with your output directories
+```
+
+2. Symlink the binary into your PATH:
+```sh
+ln -s "$(pwd)/dist/cutter" ~/.local/bin/cutter
+```
+
+If `~/.local/bin` is not in your PATH (e.g. fish shell):
+```sh
+fish_add_path ~/.local/bin
+```
+
+### Usage
+
+```sh
+cutter --filename "video.mkv" --start 00:01:00 --end 00:05:00
+cutter --filename "/path/to/video.mkv" --start 00:01:00 --end 00:05:00 --preset copy
+```
+
 ## Demo
 
 1. Search by filename — the file will be found automatically in `$HOME`:

@@ -1,7 +1,40 @@
+import { readFileSync } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
 import { PRESETS_MAP } from './presets'
+
+export function loadConfigEnv(): void {
+  const configPath = path.join(os.homedir(), '.config', 'cutter', '.env')
+
+  try {
+    const content = readFileSync(configPath, 'utf-8')
+
+    for (const line of content.split('\n')) {
+      const trimmed = line.trim()
+      if (!trimmed || trimmed.startsWith('#'))
+        continue
+
+      const eqIndex = trimmed.indexOf('=')
+      if (eqIndex === -1)
+        continue
+
+      const key = trimmed.slice(0, eqIndex).trim()
+      let value = trimmed.slice(eqIndex + 1).trim()
+
+      if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith('\'') && value.endsWith('\''))) {
+        value = value.slice(1, -1)
+      }
+
+      if (!process.env[key]) {
+        process.env[key] = value
+      }
+    }
+  }
+  catch {
+    // Config file not found — silently ignore
+  }
+}
 
 function usage(): never {
   console.error(
