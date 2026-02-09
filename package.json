@@ -26,7 +26,7 @@
     "start": "node --env-file=.env ./dist/main.cjs",
     "prebuild": "pnpm exec rimraf --glob ./dist",
     "build": "pnpm exec vite build",
-    "build:bin": "bun build src/main.ts --compile --outfile dist/cutter",
+    "build:bin": "bun build src/main.ts --compile --minify --sourcemap --outfile dist/cutter",
     "eslint": "pnpm exec eslint .",
     "eslint:fix": "pnpm exec eslint . --fix"
   },
